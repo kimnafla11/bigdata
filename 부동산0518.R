@@ -16,7 +16,9 @@ View(df_tr)
 #lag_k()기능 : k만큼 lag을 줌 
 lag_k = function (x,k) c(matrix(NA,k), x[1:(length(x)-k)])
 
+plot( df$원달러환율,c(NA,diff(df$전국)))
 
+plot(diff(df$원달러환율), type = "l")
 
 #### rsqure를 최대화 시키는 법####
 #data=0, row=30개, col=1개인 행렬
@@ -51,11 +53,12 @@ for (i in 1:30){
   summ = summary(fit)
   
   #summary에서 나온 r square값을 rsqmat라는 행렬 변수에 1부터 30까지 저장
-  rsqmat[i,] = summ$r.squared
+  rsqmat[i,] = summ$adj.r.squared
   
-  #rsquare가 최대일 때 출력
-  print(max(rsqmat))
 }
+
+#rsquare가 최대일 때 출력
+print(max(rsqmat))
 
 colors()
 #시각화
@@ -75,7 +78,7 @@ tr_x = df_tr[,3:46]
 tr_y  = df_tr[,30:46]
 
 for (j in 1:ncol(tr_x)){
-  tr_x[,j] = lag_k(tr_x[,j], k = 24)
+  tr_x[,j] = lag_k(tr_x[,j], k = 6)
 } 
 df = cbind(tr_x, tr_y)
 
@@ -107,14 +110,13 @@ library(rpart)
 library(randomForest)
 ret = lag_dat(df_tr[,3:46],36)
 #fix(ret)
-nrow(newdat)
 newdat = cbind(ret,tr_y)
 newdat =na.omit(newdat)
 nrow(newdat)
 newdat_tr = newdat[1:80,]
 names(newdat_tr)
 library(pls)
-help(lm)
+#help(lm)
 model = lm(newdat_tr$서울특별시~ ., data = newdat_tr[,1:44])
 fit = stepAIC(model, direction = "both", trace = FALSE)
 #fit = plsr(newdat_tr$서울특별시~ ., data = newdat_tr[,1:44])
@@ -124,7 +126,7 @@ cv.lasso <- cv.glmnet(x=as.matrix(newdat_tr[,1:44]), y=as.matrix(newdat_tr$서�
 pred = predict(cv.lasso,as.matrix(newdat_tr[,1:44]) )
 ####
 
-pred = predict(fit,newdat_tr[,1:44])
+#pred = predict(fit,newdat_tr[,1:44])
 names(newdat_tr)
 plot(newdat_tr$서울특별시, type = "l", ylim = c(50,120), lwd = 3)
 points(pred, type = "l", col ="blue",lwd =2)
@@ -139,18 +141,6 @@ pred2 = predict(cv.lasso,as.matrix(ph2[,1:44]))
 plot(ph2$서울특별시, type = "o",lwd = 2, col = "red", xlim = c(0,100),ylim = c(80,110))
 points(pred2, type = "o",lwd = 2)
 #plot(df_tr$서울특별시, type = "o")
-########## phase 2 test
-pred3 = predict(fit,df_tr[171:194,2:46])
-
-pred3 = predict(cv.lasso,as.matrix(df_tr[171:194,3:46])) ## lasso fit
-
-plot(df_tr$서울특별시[121:nrow(df_tr)], type = "o", col = "blue", lwd = 2)
-#points(pred3, type = "o", ylim = c(80,120), col = "red", lwd = 2)
-plot(pred3, type = "o", ylim = c(100,110), col = "red", lwd = 2)
-
-
-
-
 
 
 ### diff()함수
@@ -168,4 +158,4 @@ dd
 lag_k(d,k=2)
 #d의 출력값 NA NA 1 2 3 4 5 6 7 8
 #lenght는 그대로고 lag을 2준 형태
-d
+diff(d)
